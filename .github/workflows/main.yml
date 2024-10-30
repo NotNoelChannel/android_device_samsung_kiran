@@ -41,7 +41,7 @@ jobs:
         patch -p1 < 0001-kiran-initramfs.patch
         patch -p1 < 0003-mmc-card-not-access-RPMB-partition-for-normal-read-and-write.patch
         patch -p1 < 0004-sprdfb-fix-mmap-address.patch
-    - name: Building TWRP
+    - name: Building TWRP recovery/ramdisk
       run: |
         cd ~/TWRP
         source build/envsetup.sh
@@ -49,8 +49,31 @@ jobs:
         export LC_ALL=C
         lunch omni_kiran-eng
         make -j$(nproc --all) recoveryimage
-    - name: Uploading TWRP builds
+    - name: Building dzImage (kernel for TWRP ramdisk)
+      run: |
+          cd ~/TWRP/kernel/samsung/kiran
+          sudo git clone --depth 1 --branch android-4.4.4_r2.0.1 --single-branch https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-eabi-4.7 /opt/toolchains/arm-eabi-4.7/
+          export CROSS_COMPILE=/opt/toolchains/arm-eabi-4.7/bin/arm-eabi-
+          wget https://gitlab.com/Grimler/dtbtool-sprd/-/raw/master/dtbtool.c
+          gcc dtbtool.c -o dtbtool
+          wget https://github.com/ne0z/tizen_system_tools/raw/refs/heads/master/mkdzimage
+          make ARCH=arm tizen_kiran_defconfig
+          make -j12 zImage ARCH=arm
+          export DTC_PATH="scripts/dtc"
+          rm arch/arm/boot/dts/*.dtb -f
+          make ARCH=arm dtbs 
+          chmod +x ./dtbtool
+          chmod +x ./mkdzimage
+          ./dtbtool -o arch/arm/boot/merged-dtb -p $DTC_PATH -v arch/arm/boot/dts
+          ./mkdzimage -o arch/arm/boot/dzImage -k arch/arm/boot/zImage -d arch/arm/boot/merged-dtb
+    - name: Uploading TWRP ramdisk
       uses: actions/upload-artifact@v3
       with:
-        name: twrp
-        path: /home/runner/TWRP/out/target/product/kiran/recovery.img
+        name: ramdisk
+        path: /home/runner/TWRP/out/target/product/kiran/ramdisk-recovery.img
+    - name: Uploading kernel
+      uses: actions/upload-artifact@v3
+      with:
+        name: mkdzImage
+        path: ~/TWRP/kernel/samsung/kiran/arch/arm/boot/dzImage
+        
