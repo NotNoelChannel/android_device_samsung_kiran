@@ -48,7 +48,7 @@ BOARD_CANT_BUILD_RECOVERY_FROM_BOOT_PATCH := true
 # Kernel
 TARGET_KERNEL_SOURCE := kernel/samsung/kiran
 TARGET_KERNEL_CONFIG := tizen_kiran_defconfig
-BOARD_CUSTOM_BOOTIMG_MK := $(DEVICE_TREE)/shbootimg.mk
+BOARD_CUSTOM_BOOTIMG_MK := $(LOCAL_PATH)/shbootimg.mk
 BOARD_KERNEL_CMDLINE := mem=768M ram=768M root=/dev/mmcblk0p24 ro rootfstype=ext4 rootwait systemd.unit=recovery-mode.target pwron.reason=0x0 console=ttyS1,115200n8 androidboot.selinux=permissive
 BOARD_KERNEL_BASE := 0x00000000
 BOARD_KERNEL_PAGESIZE := 2048
