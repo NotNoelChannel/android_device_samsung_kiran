@@ -1,4 +1,4 @@
-name: TWRP CI for SM-J320FN/F/G/M
+name: TWRP CI for SM-Z130H
 
 on:
     workflow_dispatch:
@@ -53,4 +53,4 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: twrp
-        path: /home/runner/TWRP/out/target/product/kiran/recovery.*
+        path: /home/runner/TWRP/out/target/product/kiran/recovery.img
