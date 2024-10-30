@@ -1,21 +1,34 @@
-#
-# Copyright (C) 2012 The CyanogenMod Project
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
+# Paths and tools setup
+LZMA_BIN := $(shell which lzma)
+LZOP_BIN := $(shell which lzop)
+MKBOOTIMG := $(shell which mkbootimg)  # Path to mkbootimg
 
-LOCAL_PATH := $(call my-dir)
+# Recovery Image with LZMA Compression
+$(INSTALLED_RECOVERYIMAGE_TARGET): $(MKBOOTIMG) \
+		$(recovery_ramdisk) \
+		$(recovery_uncompressed_ramdisk) \
+		$(recovery_kernel)
+	@echo "----- Compressing recovery ramdisk with LZMA ------"
+	rm -f $(recovery_uncompressed_ramdisk).lzma
+	$(LZMA_BIN) $(recovery_uncompressed_ramdisk)
+	$(hide) cp $(recovery_uncompressed_ramdisk).lzma $(recovery_ramdisk)
+	@echo "----- Making recovery image with LZMA ------"
+	$(MKBOOTIMG) $(INTERNAL_RECOVERYIMAGE_ARGS) $(BOARD_MKBOOTIMG_ARGS) --output $@
+	$(hide) $(call assert-max-image-size,$@,$(BOARD_RECOVERYIMAGE_PARTITION_SIZE),raw)
+	@echo "----- Made recovery image with LZMA -------- $@"
 
+# Boot Image with LZMA Compression
+LZMA_BOOT_RAMDISK := $(PRODUCT_OUT)/ramdisk-lzma.img
+$(LZMA_BOOT_RAMDISK): $(BUILT_RAMDISK_TARGET)
+	gunzip -f < $(BUILT_RAMDISK_TARGET) | $(LZMA_BIN) -e > $@
+
+$(INSTALLED_BOOTIMAGE_TARGET): $(MKBOOTIMG) $(INTERNAL_BOOTIMAGE_FILES) $(LZMA_BOOT_RAMDISK)
+	$(call pretty,"Target boot image: $@")
+	$(hide) $(MKBOOTIMG) $(INTERNAL_BOOTIMAGE_ARGS) $(BOARD_MKBOOTIMG_ARGS) --output $@ --ramdisk $(LZMA_BOOT_RAMDISK)
+	$(hide) $(call assert-max-image-size,$@,$(BOARD_BOOTIMAGE_PARTITION_SIZE),raw)
+	@echo "Made boot image with LZMA: $@"
+
+# Recovery Image with LZOP Compression
 recovery_uncompressed_device_ramdisk := $(PRODUCT_OUT)/ramdisk-recovery-device.cpio
 $(recovery_uncompressed_device_ramdisk): $(MKBOOTFS) \
 		$(INSTALLED_RAMDISK_TARGET) \
@@ -28,12 +41,7 @@ $(recovery_uncompressed_device_ramdisk): $(MKBOOTFS) \
 	@echo "----- Making uncompressed recovery ramdisk ------"
 	$(hide) $(MKBOOTFS) $(TARGET_RECOVERY_ROOT_OUT) > $@
 
-uncompressed_ramdisk := $(PRODUCT_OUT)/ramdisk.cpio
-$(uncompressed_ramdisk): $(INSTALLED_RAMDISK_TARGET)
-	zcat $< > $@
-
-$(INSTALLED_BOOTIMAGE_TARGET): $(INSTALLED_KERNEL_TARGET)
-	$(ACP) -fp $< $@
-
-$(INSTALLED_RECOVERYIMAGE_TARGET): $(recovery_uncompressed_ramdisk)
-	lzop -f9 -o $@ $<
+$(INSTALLED_RECOVERYIMAGE_TARGET_LZOP): $(recovery_uncompressed_ramdisk)
+	@echo "----- Compressing recovery ramdisk with LZOP ------"
+	$(LZOP_BIN) -f9 -o $@ $(recovery_uncompressed_ramdisk)
+	@echo "----- Made recovery image with LZOP ------ $@"
