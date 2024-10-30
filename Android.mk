@@ -14,9 +14,9 @@
 # limitations under the License.
 #
 
-ifneq ($(filter vivalto5mve3g,$(TARGET_DEVICE)),)
+ifneq ($(filter kiran,$(TARGET_DEVICE)),)
 
-LOCAL_PATH := device/samsung/vivalto5mve3g/
+LOCAL_PATH := device/samsung/kiran/
 
 include $(call all-makefiles-under,$(LOCAL_PATH))
 

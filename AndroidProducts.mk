@@ -14,6 +14,6 @@
 # limitations under the License.
 #
 
-LOCAL_PATH := device/samsung/vivalto5mve3g/
+LOCAL_PATH := device/samsung/kiran/
 
-PRODUCT_MAKEFILES := $(LOCAL_PATH)/omni_vivalto5mve3g.mk
+PRODUCT_MAKEFILES := $(LOCAL_PATH)/omni_kiran.mk

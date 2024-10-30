@@ -14,10 +14,23 @@
 # limitations under the License.
 #
 
-LOCAL_PATH := device/samsung/vivalto5mve3g
+LOCAL_PATH := device/samsung/kiran
 
-TARGET_BOARD_PLATFORM := sc8830
-TARGET_BOOTLOADER_BOARD_NAME := vivalto5mve3g
+# Platform
+TARGET_ARCH                  := arm
+TARGET_ARCH_VARIANT          := armv7-a-neon
+TARGET_CPU_VARIANT           := generic
+TARGET_CPU_ABI               := armeabi-v7a
+TARGET_CPU_ABI2              := armeabi
+TARGET_BOOTLOADER_BOARD_NAME := sc7727s
+TARGET_BOARD_PLATFORM        := sc8830
+TARGET_BOARD_PLATFORM_GPU    := mali-400
+BOARD_VENDOR                 := samsung
+
+# Bootloader
+TW_NO_REBOOT_BOOTLOADER     := true
+TW_HAS_DOWNLOAD_MODE        := true
+BOARD_HAS_NO_MISC_PARTITION := true
 
 # Recovery
 TARGET_USERIMAGES_USE_EXT4 := true
@@ -32,30 +45,25 @@ BOARD_SUPPRESS_EMMC_WIPE := true
 TW_INPUT_BLACKLIST := "hbtp_vm"
 
 # Kernel
-TARGET_PREBUILT_KERNEL := $(LOCAL_PATH)/kernel
-BOARD_KERNEL_CMDLINE := console=ttyS1,115200n8 androidboot.selinux=permissive
+TARGET_KERNEL_SOURCE := kernel/samsung/kiran
+TARGET_KERNEL_CONFIG := tizen_kiran_defconfig
+BOARD_CUSTOM_BOOTIMG_MK := $(DEVICE_TREE)/shbootimg.mk
+BOARD_KERNEL_CMDLINE := mem=768M ram=768M root=/dev/mmcblk0p24 ro rootfstype=ext4 rootwait systemd.unit=recovery-mode.target pwron.reason=0x0 console=ttyS1,115200n8 androidboot.selinux=permissive
 BOARD_KERNEL_BASE := 0x00000000
 BOARD_KERNEL_PAGESIZE := 2048
-BOARD_MKBOOTIMG_ARGS := --ramdisk_offset 0x01000000 --tags_offset 0x00000100 --dt $(LOCAL_PATH)/dt.img
+BOARD_MKBOOTIMG_ARGS := --ramdisk_offset 0x01000000 --tags_offset 0x00000100 --dt $(LOCAL_PATH)/kernel/dtb
 
-# Architecture
-TARGET_ARCH := arm
-TARGET_ARCH_VARIANT := armv7-a-neon
-TARGET_CPU_ABI := armeabi-v7a
-TARGET_CPU_ABI2 := armeabi
-ifneq ($(filter msm8974 msm8227 msm8627 msm8230 apq8030 msm8630 msm8930 msm8930AA apq8060A msm8260A msm8660A msm8960 MPQ8064 msm8674 msm8274 apq8084,$(TARGET_BOARD_PLATFORM)),)
-TARGET_CPU_VARIANT := krait
-TARGET_RECOVERY_QCOM_RTC_FIX := true
-else 
-TARGET_CPU_VARIANT := cortex-a7
-endif
-
-# TWRP
-BOARD_USE_CUSTOM_RECOVERY_FONT := \"roboto_23x41.h\"
-ifeq ($(TW_THEME),)
-TW_THEME := portrait_hdpi
-endif
-RECOVERY_SDCARD_ON_DATA := true
+# Recovery
 RECOVERY_GRAPHICS_USE_LINELENGTH := true
+
+# TeamWin Recovery
+TW_THEME                := portrait_hdpi
+TW_EXCLUDE_TZDATA       := false
+TW_EXCLUDE_NANO         := false
+TW_EXCLUDE_BASH         := false
+TW_INCLUDE_FB2PNG       := true
+TW_FORCE_USE_BUSYBOX    := true
+TW_INCLUDE_CRYPTO       := true
+TW_CUSTOM_CPU_TEMP_PATH := "/sys/class/thermal/thermal_zone1/temp"
 
 

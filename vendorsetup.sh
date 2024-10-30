@@ -14,5 +14,6 @@
 # limitations under the License.
 #
 
-add_lunch_combo omni_vivalto5mve3g-eng
+add_lunch_combo omni_kiran-eng
+add_lunch_combo omni_kiran-userdebug
 
