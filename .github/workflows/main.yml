@@ -31,21 +31,24 @@ jobs:
         python3 ~/.bin/repo init --depth=1 -u https://github.com/NotNoelChannel/platform_manifest_twrp_omni.git -b patch-1
         git clone --branch android-5.1 --single-branch https://github.com/NotNoelChannel/android_device_samsung_kiran.git ~/TWRP/device/samsung/kiran
         python3 ~/.bin/repo sync -c --force-sync --optimized-fetch --no-tags --no-clone-bundle --prune -j$(nproc --all)
+    - name: Patching the kernel :p
+      run: |
+        git clone https://github.com/NotNoelChannel/android_kernel_samsung_kiran/ -b cm-12.1 ~/TWRP/kernel/samsung/kiran
+        cd ~/TWRP/kernel/samsung/kiran
+        wget https://gitlab.com/postmarketOS/pmaports/-/raw/master/device/testing/linux-samsung-kiran/0001-kiran-initramfs.patch
+        wget https://gitlab.com/postmarketOS/pmaports/-/raw/master/device/testing/linux-samsung-kiran/0003-mmc-card-not-access-RPMB-partition-for-normal-read-and-write.patch
+        wget https://gitlab.com/postmarketOS/pmaports/-/raw/master/device/testing/linux-samsung-kiran/0004-sprdfb-fix-mmap-address.patch
+        patch -p1 < 0001-kiran-initramfs.patch
+        patch -p1 < 0003-mmc-card-not-access-RPMB-partition-for-normal-read-and-write.patch
+        patch -p1 < 0004-sprdfb-fix-mmap-address.patch
     - name: Building TWRP
       run: |
-        OLDPATH=$PATH
-        OLDJAVAHOME=$JAVA_HOME
-        export PATH="$HOME/.jdk_7/java-se-7u75-ri/bin:$PATH"
-        export JAVA_HOME="$HOME/.jdk_7/java-se-7u75-ri"
         cd ~/TWRP
-        git clone https://github.com/NotNoelChannel/android_kernel_samsung_kiran/ -b cm-12.1 ~/TWRP/kernel/samsung/kiran
         source build/envsetup.sh
         export ALLOW_MISSING_DEPENDENCIES=true
         export LC_ALL=C
         lunch omni_kiran-eng
         make -j$(nproc --all) recoveryimage
-        export PATH=$OLDPATH
-        export JAVA_HOME=$OLDJAVAHOME
     - name: Uploading TWRP builds
       uses: actions/upload-artifact@v3
       with:
